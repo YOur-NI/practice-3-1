@@ -4,16 +4,18 @@ import { addBook, removeBook } from './task2-functions';
 import { applyFilters, filterByAuthor, filterByMinYear } from './task3-filters';
 import { createBookFromForm } from './task4-integration';
 import { filterByTitle, sortBooks } from './task5-utils';
+import { BookCatalog } from './task6-classes';
 //TODO 3.0: импортируйте BookCatalog из task6
 
 // TODO 3.1: замените `let catalog: Catalog = {...}` на экземпляр
 // `new BookCatalog([...те же книги...], 'main')`.
 // Тип `Catalog` после замены больше не нужен — уберите импорт.
 
-let catalog: Catalog = {
-  '1': { id: '1', title: 'TypeScript Guide', authors: ['John Doe'], year: 2024 },
-  '2': { id: '2', title: 'JavaScript Basics', authors: ['Jane Smith'], year: 2022 },
-};
+let catalog = new BookCatalog (
+  'main',
+  [{ id: '1', title: 'TypeScript Guide', authors: ['John Doe'], year: 2024 },
+  { id: '2', title: 'JavaScript Basics', authors: ['Jane Smith'], year: 2022 }]
+);
 
 
 // восстановление из localStorage
@@ -27,7 +29,8 @@ let catalog: Catalog = {
 
 const saved = localStorage.getItem('catalog');
 if (saved) {
-  catalog = JSON.parse(saved) as Catalog;
+  const parsed = JSON.parse(saved);
+  catalog = new BookCatalog(parsed.id, parsed.books);
 }
 
 
@@ -73,12 +76,12 @@ function renderBooks(books: Book[]) {
     deleteBtn.textContent = 'Удалить';
     deleteBtn.addEventListener('click', () => {
 
-      // TODO 3.3: замените функциональный removeBook на метод класса.      
-      catalog = removeBook(catalog, book.id)
+      // TODO 3.3: замените функциональный removeBook на метод класса.   
+      catalog.removeBook(book.id);
       saveCatalog();
       // TODO 3.4: замените вызов Object.values(catalog) на метод каталога.
       // Таких мест, где вызывается Object.values(catalog), в файле несколько — найдите все.
-      renderBooks(Object.values(catalog));
+      renderBooks(catalog.getBooks());
     });
     card.append(deleteBtn);
 
@@ -87,7 +90,7 @@ function renderBooks(books: Book[]) {
 }
 
 // Первичная отрисовка
-renderBooks(Object.values(catalog));
+renderBooks(catalog.getBooks());
 
 // обработчик формы
 form.addEventListener('submit', (e) => {
@@ -98,12 +101,12 @@ form.addEventListener('submit', (e) => {
     const newBook = createBookFromForm(formData);
 
     // TODO 3.5: замените функциональный addBook на метод класса.
-    catalog = addBook(catalog, newBook);
+    catalog.addBook(newBook);
 
     saveCatalog();
     form.reset();
 
-    renderBooks(Object.values(catalog));
+    renderBooks(catalog.getBooks());
   } catch (error) {
     if (error instanceof Error) {
       errorMessage.textContent = error.message;
@@ -119,7 +122,7 @@ function refreshList() {
   if (yearInput.value) filters.push(filterByMinYear(parseInt(yearInput.value, 10)));
   if (searchInput.value.trim()) filters.push(filterByTitle(searchInput.value.trim()));
 
-  const allBooks = Object.values(catalog);
+  const allBooks = catalog.getBooks();
   const filteredBooks = applyFilters(allBooks, filters);
 
   renderBooks(sortBooks(filteredBooks, sortBySelect.value as 'year' | 'rating'));
