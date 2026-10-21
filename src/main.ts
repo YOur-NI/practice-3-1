@@ -1,5 +1,5 @@
 import './styles.css';
-import { Book } from './task1-types'; // Убран Catalog (требование Задания 6)
+import { Book } from './task1-types';
 import { applyFilters, filterByAuthor, filterByMinYear } from './task3-filters';
 import { createBookFromForm } from './task4-integration';
 import { filterByTitle, sortBooks } from './task5-utils';
